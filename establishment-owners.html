@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Establishment Owner Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: #f9f9f9;
+    }
+    nav {
+      width: 240px;
+      background-color: #34495e;
+      color: #ecf0f1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    nav h2 {
+      margin: 0 0 20px;
+      font-weight: normal;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 12px 0;
+      text-align: left;
+      font-size: 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #3b4a61;
+      transition: background 0.3s;
+    }
+    nav button:hover, nav button.active {
+      background-color: #1abc9c;
+      color: #fff;
+    }
+    main {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: white;
+      box-shadow: inset 0 0 5px #ccc;
+    }
+    section {
+      display: none;
+    }
+    section.active {
+      display: block;
+    }
+    h2 {
+      margin-top: 0;
+    }
+
+    /* Form Styles */
+    form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    form input[type="text"], form select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    form button {
+      background-color: #1abc9c;
+      border: none;
+      padding: 10px 16px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    form button:hover {
+      background-color: #16a085;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .status-passed {
+      color: #27ae60;
+      font-weight: bold;
+    }
+    .status-failed {
+      color: #c0392b;
+      font-weight: bold;
+    }
+    .btn-download {
+      background-color: #2980b9;
+      padding: 6px 12px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-download:hover {
+      background-color: #1c5980;
+    }
+
+    /* Map container */
+    #mapContainer {
+      height: 400px;
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    /* Search & Locate Controls */
+    #mapControls {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 8px;
+    }
+    #searchInput {
+      flex-grow: 1;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #searchBtn, #locateBtn {
+      padding: 8px 14px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    #searchBtn:hover, #locateBtn:hover {
+      background-color: #16a085;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h2>Owner Dashboard</h2>
+    <button id="btnRegister" class="active">Register / Update</button>
+    <button id="btnInspection">Inspection Status</button>
+    <button id="btnGIS">GIS Map</button>
+    <button id="btnCertificates">Download Certificates</button>
+  </nav>
+
+  <main>
+    <!-- Register / Update Establishment -->
+    <section id="registerSection" class="active">
+      <h2>Register or Update Establishment</h2>
+      <form id="establishmentForm">
+        <label for="estName">Establishment Name</label>
+        <input type="text" id="estName" name="estName" required />
+
+        <label for="ownerName">Owner Name</label>
+        <input type="text" id="ownerName" name="ownerName" required />
+
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required />
+
+        <label for="type">Establishment Type</label>
+        <select id="type" name="type" required>
+          <option value="">Select Type</option>
+          <option>Restaurant</option>
+          <option>Retail Store</option>
+          <option>Manufacturing</option>
+          <option>Office</option>
+          <option>Other</option>
+        </select>
+
+        <button type="submit">Submit</button>
+      </form>
+      <p id="formMsg" style="color: green; margin-top: 10px; display:none;"></p>
+    </section>
+
+    <!-- Inspection Status -->
+    <section id="inspectionSection">
+      <h2>Inspection Status</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Inspector</th>
+            <th>Result</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody id="inspectionTableBody">
+          <!-- dynamically filled -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- GIS Map -->
+    <section id="gisSection">
+      <h2>GIS Map</h2>
+      <div id="mapControls">
+        <input type="text" id="searchInput" placeholder="Search establishment or address..." />
+        <button id="searchBtn">Search</button>
+        <button id="locateBtn">Locate Me</button>
+      </div>
+      <div id="mapContainer">
+        <div id="map" style="height: 100%; width: 100%;"></div>
+      </div>
+    </section>
+
+    <!-- Download Certificates -->
+    <section id="certificatesSection">
+      <h2>Download Compliance Certificates</h2>
+      <table>
+        <thead>
+          <tr><th>Certificate Name</th><th>Date Issued</th><th>Action</th></tr>
+        </thead>
+        <tbody id="certificatesTableBody">
+          <!-- dynamically filled -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Simple navigation between sections
+    const navButtons = {
+      btnRegister: 'registerSection',
+      btnInspection: 'inspectionSection',
+      btnGIS: 'gisSection',
+      btnCertificates: 'certificatesSection'
+    };
+    Object.keys(navButtons).forEach(id => {
+      document.getElementById(id).addEventListener('click', () => {
+        Object.values(navButtons).forEach(sectionId => {
+          document.getElementById(sectionId).classList.remove('active');
+        });
+        Object.keys(navButtons).forEach(btnId => {
+          document.getElementById(btnId).classList.remove('active');
+        });
+        document.getElementById(navButtons[id]).classList.add('active');
+        document.getElementById(id).classList.add('active');
+
+        if(navButtons[id] === 'gisSection') {
+          setTimeout(initMap, 0);
+        }
+      });
+    });
+
+    // Establishment data (simulate backend)
+    let establishmentData = {
+      estName: '',
+      ownerName: '',
+      address: '',
+      type: ''
+    };
+
+    // Inspection data (simulate backend)
+    const inspections = [
+      { date: '2025-04-20', inspector: 'Juan Dela Cruz', result: 'Passed', remarks: 'Good compliance' },
+      { date: '2025-01-15', inspector: 'Maria Santos', result: 'Failed', remarks: 'Fire exits blocked' }
+    ];
+
+    // Certificates data (simulate backend)
+    const certificates = [
+      { name: 'Compliance Certificate - 2024', date: '2024-12-15', file: 'certificate_2024.pdf' },
+      { name: 'Compliance Certificate - 2023', date: '2023-12-10', file: 'certificate_2023.pdf' }
+    ];
+
+    // Handle form submit for register/update
+    const form = document.getElementById('establishmentForm');
+    const msg = document.getElementById('formMsg');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      establishmentData.estName = formData.get('estName');
+      establishmentData.ownerName = formData.get('ownerName');
+      establishmentData.address = formData.get('address');
+      establishmentData.type = formData.get('type');
+
+      msg.textContent = "Establishment information saved successfully.";
+      msg.style.display = 'block';
+
+      setTimeout(() => {
+msg.style.display = 'none';
+}, 3000);
+});
+
+// Fill inspection status table
+const inspectionTableBody = document.getElementById('inspectionTableBody');
+function loadInspectionStatus() {
+  inspectionTableBody.innerHTML = '';
+  inspections.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.date}</td>
+      <td>${item.inspector}</td>
+      <td class="${item.result.toLowerCase() === 'passed' ? 'status-passed' : 'status-failed'}">${item.result}</td>
+      <td>${item.remarks}</td>
+    `;
+    inspectionTableBody.appendChild(tr);
+  });
+}
+loadInspectionStatus();
+
+// Fill certificates table
+const certificatesTableBody = document.getElementById('certificatesTableBody');
+function loadCertificates() {
+  certificatesTableBody.innerHTML = '';
+  certificates.forEach(cert => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${cert.name}</td>
+      <td>${cert.date}</td>
+      <td><button class="btn-download" onclick="downloadCertificate('${cert.file}')">Download</button></td>
+    `;
+    certificatesTableBody.appendChild(tr);
+  });
+}
+loadCertificates();
+
+function downloadCertificate(file) {
+  alert(`Downloading: ${file}`);
+  // Here you would trigger real download, e.g.:
+  // window.open(`/certificates/${file}`, '_blank');
+}
+
+// GIS Map
+let map, marker;
+
+function initMap() {
+  if (map) {
+    map.invalidateSize();
+    return;
+  }
+  map = L.map('map').setView([14.5995, 120.9842], 13); // Centered at Manila coords as example
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  marker = L.marker([14.5995, 120.9842]).addTo(map).bindPopup("Default Location").openPopup();
+}
+
+// Search function for GIS map (dummy implementation)
+document.getElementById('searchBtn').addEventListener('click', () => {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) {
+    alert('Please enter a search term.');
+    return;
+  }
+  // Dummy logic: If query matches "Restaurant" center to a sample location, else alert not found
+  if (query.toLowerCase().includes('restaurant')) {
+    const latlng = [14.6015, 120.9822];
+    map.setView(latlng, 16);
+    marker.setLatLng(latlng).bindPopup("Sample Restaurant Location").openPopup();
+  } else {
+    alert('Establishment not found on map.');
+  }
+});
+
+// Locate Me function
+document.getElementById('locateBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(position => {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    map.setView([lat, lng], 16);
+    marker.setLatLng([lat, lng]).bindPopup("You are here").openPopup();
+  }, () => {
+    alert('Unable to retrieve your location.');
+  });
+});
+</script> </body> </html>
+
+     

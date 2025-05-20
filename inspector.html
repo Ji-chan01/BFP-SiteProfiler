@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BFP Inspector Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .dashboard {
+      display: flex;
+      min-height: 100vh;
+    }
+    nav {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+    }
+    nav h2 {
+      margin-top: 0;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+    }
+    nav button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      border: none;
+      background-color: #34495e;
+      color: white;
+      cursor: pointer;
+    }
+    nav button:hover {
+      background-color: #1abc9c;
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .user-table th, .user-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    .status {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status-passed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-failed {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      margin: 10% auto;
+      width: 60%;
+      border-radius: 10px;
+    }
+    .close {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    button {
+      padding: 5px 10px;
+      margin-top: 5px;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    .map-controls {
+      margin-bottom: 10px;
+    }
+    .map-controls input[type="text"] {
+      padding: 5px;
+      width: 200px;
+      margin-right: 5px;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      overflow-y: auto;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px 30px;
+      margin: 5% auto;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
+      position: relative;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .modal button.submit-btn {
+      margin-top: 20px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+      width: 100%;
+    }
+    .modal button.submit-btn:hover {
+      background-color: #159b85;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <nav>
+      <h2>BFP Dashboard</h2>
+      <ul>
+        <li><button onclick="showSection('establishment')">Establishments</button></li>
+        <li><button onclick="showSection('inspection')">Inspection Results</button></li>
+        <li><button onclick="showSection('compliance')">Compliance Monitoring</button></li>
+        <li><button onclick="showSection('gisMap')">GIS Map</button></li>
+        <li><button onclick="showSection('reports')">Reports</button></li>
+      </ul>
+    </nav>
+    <div class="main-content">
+      <div id="establishment" class="section">
+        <h2>Establishment Management</h2>
+        <button onclick="openRegisterModal()">Register New Establishment</button>
+        <table class="user-table">
+          <thead>
+            <tr><th>Name</th><th>Owner</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="establishmentList"></tbody>
+        </table>
+      </div>
+      <div id="inspection" class="section hidden">
+        <h2>Inspection Results</h2>
+        <table class="user-table">
+          <thead>
+            <tr><th>Establishment</th><th>Inspector</th><th>Date</th><th>Result</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ABC Manufacturing</td><td>Inspector Juan</td><td>2025-05-01</td><td>Passed</td>
+              <td><button onclick="alert('Inspection Detail')">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="compliance" class="section hidden">
+        <h2>Compliance Monitoring</h2>
+        <table class="user-table">
+          <thead>
+            <tr><th>Establishment Name</th><th>Inspection Date</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>XYZ Retail</td><td>2025-04-20</td><td><span class="status status-failed">Non-Compliant</span></td><td>2025-04-21</td>
+              <td><button onclick="openComplianceModal('XYZ Retail', '2025-04-20', 'Non-Compliant', '2025-04-21')">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="gisMap" class="section hidden">
+        <h2>GIS Map</h2>
+        <div class="map-controls">
+          <input type="text" id="mapSearchInput" placeholder="Search Establishment...">
+          <button onclick="searchEstablishment()">Search</button>
+          <button onclick="locateUser()">Locate Me</button>
+        </div>
+        <div id="mapContainer" style="height: 400px; background-color: #f0f0f0; border: 1px solid #ccc;">
+          <div id="map"></div>
+        </div>
+      </div>
+      <div id="reports" class="section hidden">
+        <h2>Reports</h2>
+        <table class="user-table">
+          <thead>
+            <tr><th>Report Name</th><th>Date Generated</th><th>Generated By</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Inspection Summary - Q1</td><td>2025-03-15</td><td>Admin01</td>
+              <td>
+                <button onclick="openReportModal('Inspection Summary - Q1')">View</button>
+                <button onclick="downloadReport('inspection_summary_q1.pdf')">Download</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Modals -->
+   <!-- Register Establishment Modal -->
+  <div id="registerModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="registerModalTitle" aria-modal="true">
+    <div class="modal-content">
+      <span class="close" aria-label="Close modal" onclick="closeRegisterModal()">&times;</span>
+      <h2 id="registerModalTitle">Register New Establishment</h2>
+      <form id="registerForm" onsubmit="submitEstablishment(event)">
+        <label for="estName">Establishment Name</label>
+        <input type="text" id="estName" name="estName" required />
+
+        <label for="ownerName">Owner Name</label>
+        <input type="text" id="ownerName" name="ownerName" required />
+
+        <label for="estType">Establishment Type</label>
+        <select id="estType" name="estType" required>
+          <option value="" disabled selected>Select type</option>
+          <option value="Restaurant">Restaurant</option>
+          <option value="Retail">Retail</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="Office">Office</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <button type="submit" class="submit-btn">Register</button>
+      </form>
+    </div>
+  </div>
+  <!-- ... Existing modal HTML ... -->
+
+  <!-- Edit Establishment Modal -->
+<div id="editEstablishmentModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeEditModal()">&times;</span>
+    <h2>Edit Establishment</h2>
+    <form id="editEstablishmentForm">
+      <input type="hidden" id="editEstId" />
+      <div>
+        <label for="editEstName">Name:</label><br />
+        <input type="text" id="editEstName" required />
+      </div>
+      <div>
+        <label for="editEstOwner">Owner:</label><br />
+        <input type="text" id="editEstOwner" required />
+      </div>
+      <div>
+        <label for="editEstType">Type:</label><br />
+        <input type="text" id="editEstType" required />
+      </div>
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+     // Modal controls
+    function openRegisterModal() {
+      const modal = document.getElementById('registerModal');
+      modal.style.display = 'block';
+      modal.setAttribute('aria-hidden', 'false');
+      document.getElementById('estName').focus();
+    }
+    function closeRegisterModal() {
+      const modal = document.getElementById('registerModal');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      document.getElementById('registerForm').reset();
+    }
+
+    // Close modal on outside click
+    window.onclick = function(event) {
+      const modal = document.getElementById('registerModal');
+      if (event.target === modal) {
+        closeRegisterModal();
+      }
+    }
+
+     // Example establishment data store (in memory)
+    const establishments = [];
+
+    // Submit form handler
+    function submitEstablishment(event) {
+      event.preventDefault();
+      const name = document.getElementById('estName').value.trim();
+      const owner = document.getElementById('ownerName').value.trim();
+      const type = document.getElementById('estType').value;
+
+      if (!name || !owner || !type) {
+        alert('Please fill all fields');
+        return;
+      }
+
+      // Add to in-memory array
+      establishments.push({ name, owner, type, status: 'Pending' });
+      updateEstablishmentList();
+      closeRegisterModal();
+    }
+
+    // Update table with establishments
+    function updateEstablishmentList() {
+  const tbody = document.getElementById('establishmentList');
+  tbody.innerHTML = '';
+  establishments.forEach((est, idx) => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', est.id || idx);  // Use a unique id, fallback to index
+    tr.innerHTML = `
+      <td>${est.name}</td>
+      <td>${est.owner}</td>
+      <td>${est.type}</td>
+      <td><span class="status status-passed">${est.status}</span></td>
+      <td><button onclick="openEditModal('${est.id || idx}')">Edit</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'gisMap') {
+        setTimeout(initMap, 0);
+      }
+    }
+    function searchEstablishment() {
+      const query = document.getElementById('mapSearchInput').value.trim();
+      if (!query) return alert('Enter establishment name.');
+      alert('Search function is a placeholder. You searched for: ' + query);
+    }
+    function locateUser() {
+      if (!navigator.geolocation) return alert('Geolocation not supported.');
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        map.setView([latitude, longitude], 16);
+        L.marker([latitude, longitude]).addTo(map)
+          .bindPopup("Your Location").openPopup();
+      }, () => alert('Unable to retrieve location.'));
+    }
+    let map;
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([13.41, 122.56], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      L.marker([13.41, 122.56]).addTo(map)
+        .bindPopup('Example Location').openPopup();
+    }
+  </script>
+  <script>
+    function openEditModal(estId) {
+  const row = document.querySelector(`#establishmentList tr[data-id="${estId}"]`);
+  if (!row) return alert('Establishment not found.');
+
+  document.getElementById('editEstId').value = estId;
+  document.getElementById('editEstName').value = row.cells[0].textContent;
+  document.getElementById('editEstOwner').value = row.cells[1].textContent;
+  document.getElementById('editEstType').value = row.cells[2].textContent;
+
+  document.getElementById('editEstablishmentModal').style.display = 'block';
+}
+
+function closeEditModal() {
+  document.getElementById('editEstablishmentModal').style.display = 'none';
+}
+
+document.getElementById('editEstablishmentForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const estId = document.getElementById('editEstId').value;
+  const name = document.getElementById('editEstName').value.trim();
+  const owner = document.getElementById('editEstOwner').value.trim();
+  const type = document.getElementById('editEstType').value.trim();
+
+  const row = document.querySelector(`#establishmentList tr[data-id="${estId}"]`);
+  if (!row) return alert('Establishment not found.');
+
+  row.cells[0].textContent = name;
+  row.cells[1].textContent = owner;
+  row.cells[2].textContent = type;
+
+  closeEditModal();
+});
+
+  </script>
+</body>
+</html>
