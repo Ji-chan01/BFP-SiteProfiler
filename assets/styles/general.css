@@ -49,6 +49,13 @@ body {
       border-bottom: 1px solid #ccc;
     }
 
+    .topbar i {
+      background: #f8f8f8;
+      padding: 0.8rem;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
     .user-table, .assignment-table, .history-table {
       width: 100%;
       border-collapse: collapse;
@@ -280,13 +287,19 @@ body {
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+.map-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-    .map-container {
-      margin-top: 20px;
-      height: 300px;
-      background-color: #ddd;
-      border-radius: 12px;
-    }
+#dashboard-gis-map {
+  height: 500px;
+  width: 100%;
+}
+
 
     /* GIS Section */
     #gis-section {
@@ -370,3 +383,5 @@ body {
       margin-right: 8px;
       border-radius: 50%;
     }
+
+    

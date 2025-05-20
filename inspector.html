@@ -5,168 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BFP Inspector Dashboard</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .dashboard {
-      display: flex;
-      min-height: 100vh;
-    }
-    nav {
-      width: 220px;
-      background-color: #2c3e50;
-      color: white;
-      padding: 20px;
-    }
-    nav h2 {
-      margin-top: 0;
-    }
-    nav ul {
-      list-style: none;
-      padding: 0;
-    }
-    nav button {
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      border: none;
-      background-color: #34495e;
-      color: white;
-      cursor: pointer;
-    }
-    nav button:hover {
-      background-color: #1abc9c;
-    }
-    .main-content {
-      flex-grow: 1;
-      padding: 20px;
-    }
-    .hidden {
-      display: none;
-    }
-    .user-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .user-table th, .user-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    .status {
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-    .status-passed {
-      background-color: #d4edda;
-      color: #155724;
-    }
-    .status-failed {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background: white;
-      padding: 20px;
-      margin: 10% auto;
-      width: 60%;
-      border-radius: 10px;
-    }
-    .close {
-      float: right;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    button {
-      padding: 5px 10px;
-      margin-top: 5px;
-    }
-    #map {
-      height: 100%;
-      width: 100%;
-    }
-    .map-controls {
-      margin-bottom: 10px;
-    }
-    .map-controls input[type="text"] {
-      padding: 5px;
-      width: 200px;
-      margin-right: 5px;
-    }
-
-    /* Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      overflow-y: auto;
-    }
-    .modal-content {
-      background: white;
-      padding: 20px 30px;
-      margin: 5% auto;
-      width: 90%;
-      max-width: 500px;
-      border-radius: 10px;
-      position: relative;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .close {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px 10px;
-      margin-top: 5px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    .modal button.submit-btn {
-      margin-top: 20px;
-      background-color: #1abc9c;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      border-radius: 4px;
-      font-weight: bold;
-      width: 100%;
-    }
-    .modal button.submit-btn:hover {
-      background-color: #159b85;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  
+  <link rel="stylesheet" href="./assets/styles/inspector.css">
 </head>
 <body>
   <div class="dashboard">
@@ -186,7 +28,7 @@
         <button onclick="openRegisterModal()">Register New Establishment</button>
         <table class="user-table">
           <thead>
-            <tr><th>Name</th><th>Owner</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Name</th><th>Owner</th><th>Address</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="establishmentList"></tbody>
         </table>
@@ -200,7 +42,7 @@
           <tbody>
             <tr>
               <td>ABC Manufacturing</td><td>Inspector Juan</td><td>2025-05-01</td><td>Passed</td>
-              <td><button onclick="alert('Inspection Detail')">View</button></td>
+              <td><button onclick="openViewInspectionModal()">View</button></td>
             </tr>
           </tbody>
         </table>
@@ -256,21 +98,46 @@
       <span class="close" aria-label="Close modal" onclick="closeRegisterModal()">&times;</span>
       <h2 id="registerModalTitle">Register New Establishment</h2>
       <form id="registerForm" onsubmit="submitEstablishment(event)">
+        <div class="display-photo">
+          <h3>Display Photo</h3>
+          <label for="display-picture" class="d_p">
+            <i class="fa-solid fa-images"></i>
+            <p>Choose photo</p>
+            <input id="display-picture" type="file" accept="image/*">
+          </label>
+        </div>
         <label for="estName">Establishment Name</label>
         <input type="text" id="estName" name="estName" required />
 
         <label for="ownerName">Owner Name</label>
         <input type="text" id="ownerName" name="ownerName" required />
 
-        <label for="estType">Establishment Type</label>
-        <select id="estType" name="estType" required>
-          <option value="" disabled selected>Select type</option>
-          <option value="Restaurant">Restaurant</option>
-          <option value="Retail">Retail</option>
-          <option value="Manufacturing">Manufacturing</option>
-          <option value="Office">Office</option>
-          <option value="Other">Other</option>
+        <label for="addressEst">Address</label>
+        <input type="text" id="addressEst" name="addressEst" required />
+
+        <label for="statusEst">Status</label>
+        <select name="" id="statusEst">
+          <option value="">Low Risk</option>
+          <option value="">Medium Risk</option>
+          <option value="">High Risk</option>
         </select>
+
+        <label for="occupancyType">Type of Occupancy</label>
+        <select name="occupancyType" id="occupancyType">
+          <option value=""></option>
+          <option value=""></option>
+          <option value=""></option>
+          <option value=""></option>
+        </select>
+
+        <label for="areaEst">Area</label>
+        <input type="text" id="areaEst" name="areaEst" required />
+
+        <label for="paidTaxes">Taxes Paid</label>
+        <input type="text" id="paidTaxes" name="paidTaxes" required />
+
+        <label for="validityEst">Validity</label>
+        <input type="date" id="validityEst" name="validityEst" required />
 
         <button type="submit" class="submit-btn">Register</button>
       </form>
@@ -284,21 +151,119 @@
     <span class="close" onclick="closeEditModal()">&times;</span>
     <h2>Edit Establishment</h2>
     <form id="editEstablishmentForm">
+      <div class="display-photo">
+          <h3>Display Photo</h3>
+          <div class="img-cont">
+            <img src="./assets/images/MILLEN~1.JPG" alt="">
+          </div>
+          <label for="display-picture" class="d_p_change">
+            Change photo
+            <input id="display-picture" type="file" accept="image/*">
+          </label>
+        </div>
       <input type="hidden" id="editEstId" />
-      <div>
-        <label for="editEstName">Name:</label><br />
-        <input type="text" id="editEstName" required />
-      </div>
-      <div>
-        <label for="editEstOwner">Owner:</label><br />
-        <input type="text" id="editEstOwner" required />
-      </div>
-      <div>
-        <label for="editEstType">Type:</label><br />
-        <input type="text" id="editEstType" required />
-      </div>
-      <button type="submit">Save Changes</button>
+      <label for="editEstName">Establishment Name</label>
+        <input type="text" id="editEstName" name="editEstName" required />
+
+        <label for="editOwnerName">Owner Name</label>
+        <input type="text" id="editOwnerName" name="editOwnerName" required />
+
+        <label for="editAddressEst">Address</label>
+        <input type="text" id="editAddressEst" name="editAddressEst" required />
+
+        <label for="editStatusEst">Status</label>
+        <select name="" id="editStatusEst">
+          <option value="">Low Risk</option>
+          <option value="">Medium Risk</option>
+          <option value="">High Risk</option>
+        </select>
+
+        <label for="editOccupancyType">Type of Occupancy</label>
+        <select name="editOccupancyType" id="editOccupancyType">
+          <option value=""></option>
+          <option value=""></option>
+          <option value=""></option>
+          <option value=""></option>
+        </select>
+
+        <label for="editAreaEst">Area</label>
+        <input type="text" id="editAreaEst" name="editAreaEst" required />
+
+        <label for="editPaidTaxes">Taxes Paid</label>
+        <input type="text" id="editPaidTaxes" name="editPaidTaxes" required />
+
+        <label for="editValidityEst">Validity</label>
+        <input type="date" id="editValidityEst" name="editValidityEst" required />
+
+        <button type="submit" class="submit-btn">Save Changes</button>
     </form>
+  </div>
+</div>
+
+<div id="viewInspectionStatus" class="modal" aria-hidden="true" role="dialog" aria-labelledby="registerModalTitle" aria-modal="true">
+    <div class="modal-content">
+      <span class="close" aria-label="Close modal" onclick="closeViewInspectionModal()">&times;</span>
+      <h2 id="registerModalTitle">Establishment Details</h2>
+      <form id="registerForm">
+
+        <div class="display-photo">
+          <h3>Preview</h3>
+          <div class="img-cont">
+            <img src="./assets/images/MILLEN~1.JPG" alt="">
+          </div>
+        </div>
+
+        <label>Establishment Name</label>
+        <p>ABC Comp</p>
+
+        <label>Owner Name</label>
+        <p>Juan Dela Cruz</p>
+
+        <label>Address</label>
+        <p>San Isidoro, Virac</p>
+
+        <label>Status</label>
+        <p>Low Risk</p>
+
+        <label>Type of Occupancy</label>
+        <p>Commercial</p>
+
+        <label>Area</label>
+        <p>150 sqm</p>
+
+        <label>Taxes Paid</label>
+        <p>2,000</p>
+
+        <label>Issued date</label>
+        <p>Jan 10, 2024</p>
+
+        <label>Validity</label>
+        <p>July 30, 2029</p>
+
+        <button type="button" class="submit-btn" onclick="closeViewInspectionModal()">Exit</button>
+      </form>
+    </div>
+  </div>
+
+<div class="modal" id="complianceModal">
+  <div class="modal-content">
+    <div class="header-m">
+      <h2>Compliance Info</h2>
+      <button class="modal-close" id="closeComplianceModalBtn">&times;</button>
+    </div>
+    <div class="display-photo">
+          <h3>Preview</h3>
+          <div class="img-cont">
+            <img src="./assets/images/MILLEN~1.JPG" alt="">
+          </div>
+        </div>
+      <p><strong>Name:</strong> <span id="complianceName"></span></p>
+      <p><strong>Date:</strong> <span id="complianceDate"></span></p>
+      <p><strong>Status:</strong> <span id="complianceStatus"></span></p>
+      <p><strong>Due Date:</strong> <span id="complianceDueDate"></span></p>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn-cancel" id="closeComplianceModalBtn2">Close</button>
+      </div>
   </div>
 </div>
 
@@ -318,6 +283,33 @@
       document.getElementById('registerForm').reset();
     }
 
+    function openViewInspectionModal() {
+      const modal = document.getElementById("viewInspectionStatus");
+      modal.style.display = "block";
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeViewInspectionModal() {
+      const modal = document.getElementById('viewInspectionStatus');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openComplianceModal(name, date, status, dueDate) {
+      document.getElementById('complianceName').textContent = name;
+      document.getElementById('complianceDate').textContent = date;
+      document.getElementById('complianceStatus').textContent = status;
+      document.getElementById('complianceDueDate').textContent = dueDate;
+      document.getElementById('complianceModal').style.display = 'block';
+    }
+
+    document.getElementById('closeComplianceModalBtn').addEventListener('click', function () {
+      document.getElementById('complianceModal').style.display = "none";
+    });
+    document.getElementById('closeComplianceModalBtn2').addEventListener('click', function () {
+      document.getElementById('complianceModal').style.display = "none";
+    });
+
     // Close modal on outside click
     window.onclick = function(event) {
       const modal = document.getElementById('registerModal');
@@ -334,15 +326,15 @@
       event.preventDefault();
       const name = document.getElementById('estName').value.trim();
       const owner = document.getElementById('ownerName').value.trim();
-      const type = document.getElementById('estType').value;
+      const address = document.getElementById('addressEst').value.trim();
 
-      if (!name || !owner || !type) {
+      if (!name || !owner) {
         alert('Please fill all fields');
         return;
       }
 
       // Add to in-memory array
-      establishments.push({ name, owner, type, status: 'Pending' });
+      establishments.push({ name, owner, address, status: 'Pending' });
       updateEstablishmentList();
       closeRegisterModal();
     }
@@ -357,7 +349,7 @@
     tr.innerHTML = `
       <td>${est.name}</td>
       <td>${est.owner}</td>
-      <td>${est.type}</td>
+      <td>${est.address}</td>
       <td><span class="status status-passed">${est.status}</span></td>
       <td><button onclick="openEditModal('${est.id || idx}')">Edit</button></td>
     `;
@@ -405,8 +397,8 @@
 
   document.getElementById('editEstId').value = estId;
   document.getElementById('editEstName').value = row.cells[0].textContent;
-  document.getElementById('editEstOwner').value = row.cells[1].textContent;
-  document.getElementById('editEstType').value = row.cells[2].textContent;
+  document.getElementById('editOwnerName').value = row.cells[1].textContent;
+  document.getElementById('editAddressEst').value = row.cells[2].textContent;
 
   document.getElementById('editEstablishmentModal').style.display = 'block';
 }

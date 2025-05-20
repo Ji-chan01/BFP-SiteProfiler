@@ -4,159 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Establishment Owner Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-      background: #f9f9f9;
-    }
-    nav {
-      width: 240px;
-      background-color: #34495e;
-      color: #ecf0f1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-    }
-    nav h2 {
-      margin: 0 0 20px;
-      font-weight: normal;
-    }
-    nav button {
-      background: none;
-      border: none;
-      color: inherit;
-      padding: 12px 0;
-      text-align: left;
-      font-size: 16px;
-      cursor: pointer;
-      border-bottom: 1px solid #3b4a61;
-      transition: background 0.3s;
-    }
-    nav button:hover, nav button.active {
-      background-color: #1abc9c;
-      color: #fff;
-    }
-    main {
-      flex-grow: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: white;
-      box-shadow: inset 0 0 5px #ccc;
-    }
-    section {
-      display: none;
-    }
-    section.active {
-      display: block;
-    }
-    h2 {
-      margin-top: 0;
-    }
-
-    /* Form Styles */
-    form label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-    form input[type="text"], form select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    form button {
-      background-color: #1abc9c;
-      border: none;
-      padding: 10px 16px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.3s;
-    }
-    form button:hover {
-      background-color: #16a085;
-    }
-
-    /* Table Styles */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    table, th, td {
-      border: 1px solid #ddd;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    .status-passed {
-      color: #27ae60;
-      font-weight: bold;
-    }
-    .status-failed {
-      color: #c0392b;
-      font-weight: bold;
-    }
-    .btn-download {
-      background-color: #2980b9;
-      padding: 6px 12px;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn-download:hover {
-      background-color: #1c5980;
-    }
-
-    /* Map container */
-    #mapContainer {
-      height: 400px;
-      margin-top: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    /* Search & Locate Controls */
-    #mapControls {
-      margin-bottom: 10px;
-      display: flex;
-      gap: 8px;
-    }
-    #searchInput {
-      flex-grow: 1;
-      padding: 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    #searchBtn, #locateBtn {
-      padding: 8px 14px;
-      background-color: #1abc9c;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s;
-    }
-    #searchBtn:hover, #locateBtn:hover {
-      background-color: #16a085;
-    }
-  </style>
+  
+  <link rel="stylesheet" href="./assets/styles/establishment-owner.css">
 </head>
 <body>
 
@@ -166,13 +18,47 @@
     <button id="btnInspection">Inspection Status</button>
     <button id="btnGIS">GIS Map</button>
     <button id="btnCertificates">Download Certificates</button>
+    <button id="logoutBtn">Logout</button>
   </nav>
 
   <main>
     <!-- Register / Update Establishment -->
     <section id="registerSection" class="active">
       <h2>Register or Update Establishment</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Establishment Name</th>
+            <th>Owner Name</th>
+            <th>Address</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="">
+          <tr>
+            <td>ABC Company</td>
+            <td>Juan Dela Cruz</td>
+            <td>Brgy. Cavinitan, Virac, Catanduanes</td>
+            <td>Restaurant</td>
+          </tr>
+          <tr>
+            <td>ABC Company</td>
+            <td>Juan Dela Cruz</td>
+            <td>Brgy. Bigaa, Virac, Catanduanes</td>
+            <td>Restaurant</td>
+          </tr>
+        </tbody>
+      </table>
       <form id="establishmentForm">
+        <div class="display-photo">
+          <h3>Display Photo</h3>
+          <label for="display-picture" class="d_p">
+            <i class="fa-solid fa-images"></i>
+            <p>Choose photo</p>
+            <input id="display-picture" type="file" accept="image/*">
+          </label>
+        </div>
+
         <label for="estName">Establishment Name</label>
         <input type="text" id="estName" name="estName" required />
 
@@ -191,6 +77,7 @@
           <option>Office</option>
           <option>Other</option>
         </select>
+
 
         <button type="submit">Submit</button>
       </form>
@@ -268,6 +155,9 @@
       });
     });
 
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      window.location.href = "login.html"
+    })
     // Establishment data (simulate backend)
     let establishmentData = {
       estName: '',

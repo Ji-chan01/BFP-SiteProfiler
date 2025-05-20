@@ -1,13 +1,11 @@
   const edit_user_btn = document.querySelectorAll(".edit-user-btn");
   const edit_modal_user = document.getElementById("editUserModal");
-  // Open Modal
 
   edit_user_btn.forEach((b) => {
     b.addEventListener("click", () => {
       document.getElementById('editUserModal').style.display = "flex";
     })
   })
-// Close Modal (on X or Cancel)
 document.getElementById('cancelModalBtn').addEventListener('click', function () {
   document.getElementById('editUserModal').style.display = "none";
 });
@@ -26,7 +24,7 @@ document.getElementById('saveUserBtn').addEventListener('click', function () {
 
   function downloadReport(filename) {
     const link = document.createElement('a');
-    link.href = `/path/to/reports/${filename}`; // Replace with real path
+    link.href = `/path/to/reports/${filename}`;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
@@ -44,7 +42,7 @@ document.getElementById('saveUserBtn').addEventListener('click', function () {
 
   function downloadReport(filename) {
     const link = document.createElement('a');
-    link.href = `/path/to/reports/${filename}`; // Replace with real path
+    link.href = `/path/to/reports/${filename}`;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
@@ -63,7 +61,6 @@ document.getElementById('saveUserBtn').addEventListener('click', function () {
     document.getElementById('complianceModal').style.display = 'none';
   }
 
-  // Sample establishment data with coordinates & compliance status
   const establishments = [
     {
       id: 1,
@@ -120,7 +117,6 @@ function showSection(sectionId) {
   sections.forEach(section => section.classList.add('hidden'));
   document.getElementById(sectionId).classList.remove('hidden');
 
-  // Set section title
   const titleMap = {
     dashboard: "Dashboard",
     'user-management': "User Management",
@@ -132,7 +128,7 @@ function showSection(sectionId) {
   };
   document.getElementById('sectionTitle').innerText = titleMap[sectionId];
 
-  if (sectionId === "map") {
+  if (sectionId === "map" ) {
     setTimeout(() => {
       if (!mapInstance) {
         mapInstance = L.map('gis-map').setView([13.0, 122.0], 6);
@@ -142,7 +138,7 @@ function showSection(sectionId) {
       } else {
         mapInstance.invalidateSize();
       }
-    }, 100); // slight delay ensures DOM is visible before rendering
+    }, 100);
   }
 }
 
@@ -156,7 +152,6 @@ function showSection(sectionId) {
     document.addEventListener("DOMContentLoaded", () => {
   const mapSection = document.getElementById("map");
   
-  // Render the map only once when the map section is first shown
   let mapInitialized = false;
 
   window.showSection = function (sectionId) {
@@ -167,16 +162,14 @@ function showSection(sectionId) {
     document.getElementById("sectionTitle").textContent =
       sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
 
-    // Initialize the map only when the GIS Map section is activated
-    if (sectionId === "map" && !mapInitialized) {
-      const map = L.map("gis-map").setView([13.41, 122.56], 6); // Example: center of the Philippines
+if (sectionId === "map" && !mapInitialized) {
+      const map = L.map("gis-map").setView([13.41, 122.56], 6);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
           'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      // Example marker (you can loop and add your establishments here)
       L.marker([13.41, 122.56]).addTo(map)
         .bindPopup("Sample Establishment")
         .openPopup();
@@ -184,4 +177,18 @@ function showSection(sectionId) {
       mapInitialized = true;
     }
   };
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const map = L.map("dashboard-gis-map").setView([13.41, 122.56], 6);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  L.marker([13.41, 122.56])
+    .addTo(map)
+    .bindPopup("Sample Establishment")
+    .openPopup();
 });
